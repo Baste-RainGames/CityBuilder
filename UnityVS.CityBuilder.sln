@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityVS.CityBuilder.CSharp", "UnityVS.CityBuilder.CSharp.csproj", "{54275CA8-2E02-689C-F63B-EB1C7175555C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityVS.CityBuilder.CSharp.Editor", "UnityVS.CityBuilder.CSharp.Editor.csproj", "{72F02D86-DD29-6C07-953E-9E78DCC25DC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{54275CA8-2E02-689C-F63B-EB1C7175555C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54275CA8-2E02-689C-F63B-EB1C7175555C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54275CA8-2E02-689C-F63B-EB1C7175555C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54275CA8-2E02-689C-F63B-EB1C7175555C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72F02D86-DD29-6C07-953E-9E78DCC25DC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72F02D86-DD29-6C07-953E-9E78DCC25DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72F02D86-DD29-6C07-953E-9E78DCC25DC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72F02D86-DD29-6C07-953E-9E78DCC25DC1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
