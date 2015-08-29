@@ -217,9 +217,18 @@ public class CityRow {
         get { return _row.CopyArray(); }
     }
 
+    private bool IsEqual(CityTile t1, CityTile t2) {
+        if (t1 == CityTile.DEBUG && t2 == CityTile.Street)
+            return true;
+        if (t2 == CityTile.DEBUG && t1 == CityTile.Street)
+            return true;
+
+        return t1 == t2;
+    }
+
     public bool Matches(CityRow row) {
         for (int i = 0; i < _row.Length; i++) {
-            if (row._row[i] != _row[i])
+            if (!IsEqual(row._row[i], _row[i]))
                 return false;
         }
         return true;

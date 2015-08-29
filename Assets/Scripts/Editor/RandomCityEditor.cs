@@ -1,5 +1,7 @@
+using System;
 using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [CustomEditor(typeof (RandomCity))]
 public class RandomCityEditor : UnityEditor.Editor {
@@ -14,13 +16,46 @@ public class RandomCityEditor : UnityEditor.Editor {
         script.testOutput = (TextAsset) EditorGUILayout.ObjectField("Test output file", script.testOutput, typeof (TextAsset), false);
         script.visualizer = (CityToBlocks) EditorGUILayout.ObjectField("Visualizer", script.visualizer, typeof (CityToBlocks), true);
 
+        if (script.currentGenerator != null) {
+            if (GUILayout.Button("Step city creation next")) {
+                if (!script.currentGenerator.MoveNext()) {
+                    script.currentGenerator = null;
+                    EditorUtility.SetDirty(script);
+                    return;
+                }
+                City generated = script.currentGenerator.Current;
+                WriteToTextAsset.Write(script.testOutput, generated.ToString());
+                script.visualizer.CreateBlocks();
+
+            }
+            if (GUILayout.Button("Finalize generation")) {
+                City generated = null;
+                while (script.currentGenerator.MoveNext()) {
+                    generated = script.currentGenerator.Current;
+                }
+                WriteToTextAsset.Write(script.testOutput, generated.ToString());
+                script.visualizer.CreateBlocks();
+                script.currentGenerator = null;
+            }
+
+            if (GUILayout.Button("Bail out of generation")) {
+                script.currentGenerator = null;
+            }
+
+            serializedObject.Update();
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("openings"), true);
+            serializedObject.ApplyModifiedProperties();
+
+            return;
+        }
+
         if (GUILayout.Button("Write an empty city to the file")) {
             WriteToTextAsset.Write(script.testOutput, script.CreateEmptyCity().ToString());
             script.visualizer.CreateBlocks();
         }
 
         if (GUILayout.Button("Create a random city")) {
-            WriteToTextAsset.Write(script.testOutput, script.CreateRandomCity().ToString());
+            WriteToTextAsset.Write(script.testOutput, script.StartCreatingRandomCity().ToString());
             script.visualizer.CreateBlocks();
         }
 

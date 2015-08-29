@@ -1,11 +1,15 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class RandomCity : MonoBehaviour {
 
-    private List<Opening> openings;
+    public List<Opening> openings;
+    public IEnumerator<City> currentGenerator;
 
-    private struct Opening {
+    [Serializable]
+    public class Opening {
         public CityRow row;
         public Dir dir;
         public int x, y;
@@ -21,21 +25,31 @@ public class RandomCity : MonoBehaviour {
         return new City(grid);
     }
 
-    public City CreateRandomCity() {
+    public City StartCreatingRandomCity() {
         openings = new List<Opening>();
         CityTile[,] grid = new CityTile[100, 100];
         City city = new City(grid);
 
         List<City> allCities = new List<City>();
         foreach (var source in sources) {
-            //.Shuffled()) {
             allCities.Add(City.FromString(source));
         }
 
         city = InsertInCity(city, allCities[0], 47, 47);
+        currentGenerator = CityGenerator(city, allCities);
+
+
+        city = showDebugOpenings(city);
+
+        return city;
+    }
+
+    private IEnumerator<City> CityGenerator(City city, List<City> allCities) {
         int safety = 0;
         int insertions = 0;
         while (safety < 100 && insertions < 15 && openings.Count > 0) {
+            string debug = "stepping generation next. Number of openings: " + openings.Count + ", insertions: " + insertions + ", safety: " + safety;
+
             safety++;
             Opening opening = openings.GetRandom();
             City insert = FindMatching(opening, allCities);
@@ -43,24 +57,65 @@ public class RandomCity : MonoBehaviour {
                 Debug.LogWarning("Found no matching city for an opening!");
                 continue;
             }
+
             var startX = opening.x;
             var startY = opening.y;
-
             if (opening.dir == Dir.Left)
                 startX -= insert.width;
             else if (opening.dir == Dir.Up)
                 startY -= insert.height;
+            else if (opening.dir == Dir.Down)
+                startY++;
+            else if (opening.dir == Dir.Right)
+                startX++;
+
+            debug += "\nStarting at (" + startX + "/" + startY + ") \nInserting:\n";
+            debug += insert.ToString();
 
             if (city.HasRoomFor(insert, startX, startY)) {
                 insertions++;
                 city = InsertInCity(city, insert, startX, startY);
+                RemoveInvalidOpenings(city.cityGrid);
+                debug += "\nInsert successfull!";
             }
-            openings.Remove(opening);
+            else {
+                debug += "\nInsert failed, no room!";
+            }
+            Debug.Log(debug);
+
+            city = showDebugOpenings(city);
+
+            yield return city;
         }
 
-        city = ParseOpenings(city);
+        Debug.Log("Finished generation: Number of openings: " + openings.Count + ", insertions: " + insertions + ", safety: " + safety);
+    }
 
-        return city;
+    private void RemoveInvalidOpenings(CityTile[,] cityGrid) {
+        //foreach (var opening in openings) {
+        openings.RemoveAll(opening => {
+            var xDir = opening.dir.X();
+            var yDir = opening.dir.Y();
+            var startX = opening.x + xDir;
+            var startY = opening.y + yDir;
+            //int x = opening.x + opening.dir.X();
+            //int y = opening.y + opening.dir.Y();
+            CityTile[] tiles = opening.row.tiles;
+            string debug = "checking validity of opening " + tiles.PrettyPrint() + " as " + opening.x + "/" + opening.y + " in the direction " + opening.dir;
+            for (int i = 0; i < tiles.Length; i++) {
+                CityTile cityTile = cityGrid[startX + i * xDir, +startY + i * yDir];
+                debug += string.Format("\nChecking tile at {0}/{1}, it has the value {2}", startX + i * xDir, startY + i * yDir, cityTile);
+                if (cityTile != CityTile.Empty) {
+                    i = tiles.Length;
+                    debug += "\nremoved it!";
+                    Debug.Log(debug);
+                    return true;
+                }
+            }
+            Debug.Log(debug);
+            return false;
+        });
+
     }
 
     private City FindMatching(Opening opening, List<City> allCities) {
@@ -80,9 +135,16 @@ public class RandomCity : MonoBehaviour {
         return cityRow != null && cityRow.Matches(openingRow);
     }
 
-    private City ParseOpenings(City city) {
+    private City showDebugOpenings(City city) {
         CityTile[,] grid;
         grid = city.cityGrid;
+
+        for (int x = 0; x < grid.GetLength(0); x++) {
+            for (int y = 0; y < grid.GetLength(1); y++) {
+                if(grid[x,y] == CityTile.DEBUG)
+                    grid[x,y] = CityTile.Street; //reset old debugs.
+            }
+        }
 
         foreach (var opening in openings) {
             var rowLength = opening.row.tiles.Length;
